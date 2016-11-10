@@ -9,6 +9,7 @@ function [ clusters, mu ] = kmeans( data_set, k )
     rand_idx = randi(rows, 1, k);
     % rows = size(blob,1);
     mu = data_set(rand_idx,:);
+    
     %     blob(rand_idx(1),:)
 
 
@@ -17,6 +18,7 @@ function [ clusters, mu ] = kmeans( data_set, k )
     while (~end_flag)
         % compute l2_dist
         l2_dist = pdist2(data_set, mu);
+%           l2_dist = norm(data_set - mu);
     %     l2_dist_1 = pdist2(mu, data_set);
         % find which centroid is closer to each point 
         [M, I] = min(l2_dist, [], 2);

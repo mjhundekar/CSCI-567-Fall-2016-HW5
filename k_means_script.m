@@ -1,8 +1,8 @@
 circle = csvread('hw5_circle.csv');
-% blob = csvread('hw5_blob.csv');
+blob = csvread('hw5_blob.csv');
 
-blob_data = load('hw5_blob.mat');
-blob = blob_data.points;
+% blob_data = load('hw5_blob.mat');
+% blob = blob_data.points;
 k_name = cellstr(char('K-means k = 2', 'K-means k = 3', 'K-means k = 5'));
 
 no_of_clusters = [2, 3, 5];
@@ -32,7 +32,7 @@ for i = 1 : length(no_of_clusters)
    
 end
 
-f =  figure('Name', 'Circle Data Set');
+% f =  figure('Name', 'Circle Data Set');
 for i = 1 : length(no_of_clusters)
     % disp( k(i) );
     k = no_of_clusters(i);
