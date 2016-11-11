@@ -1,0 +1,120 @@
+blob = csvread('hw5_blob.csv');
+k = 3;
+N = length(blob(:,1));
+% we need to estimate gamma, w, mu, and covariance
+Y = [];
+max_LL = -inf;
+f =  figure('EM of GMM')
+hold on;
+title('GMM with EM: Log-Likelihood');
+xlabel('Iterations');
+ylabel('Log Likelihood');
+
+for i=1:5
+    %initialize mu
+    [clusters, mu] = kmeans(blob, k);
+    % guess theta
+    cov_1 = cov(blob);
+    cov_2 = cov(blob);
+    cov_3 = cov(blob);
+    cov_k = {cov_1; cov_2; cov_3};
+    mean = {mu(1,:); mu(2,:); mu(3,:)};
+    random_w = rand(3,1);
+    w = random_w./sum(random_w);
+    gamma = zeros(N,k);
+    convergence = false;
+    iterations = 0;
+    while(~convergence)
+        iterations = iterations+1;
+        %  E Step use the guessed theta to claculate the gamma
+        for j = 1:N
+            data_set = {blob(i,:);blob(i,:);blob(i,:)};
+%             marginal_dist = w.*arrayfun(mvnpdf, data_set, mean, cov_k);
+            marginal_dist =   w(1)*mvnpdf(blob(i,:), mean{1}, cov_k{1})...
+                            + w(2)*mvnpdf(blob(i,:), mean{2}, cov_k{2})...
+                            + w(3)*mvnpdf(blob(i,:), mean{3}, cov_k{3});
+            for m=1:k
+                gamma(i,m) = w(m)*mvnpdf(blob(i,:), mean{m}, cov_k{m})/marginal_dist;
+            end
+        end
+        %M Step use the above values to maximize mean and covariance 
+        mean_new = cell(3,1);
+        for m=1:k
+            mean_new{k} = ( sum( repmat( gamma(:,k),1,2 ).*blob(:,:), 1 ) )./sum(gamma(:,k),1);
+        end
+        sum = 0;
+        for m=1:k
+            sum = sum + abs(sum(mean_new{m}-mean{m}, 2));
+            
+        end
+        if sum < 0.000001
+            convergence = true;
+        end
+        for m=1:k
+            covar = zeros(size(cov_k{1}));
+            for n = 1:N
+            covar = covar + (blob(i,:)-mean{m})'*(blob(i,:)-mean{m}).*(gamma(i,m));
+            end
+            cov_k{m} = covar./sum(gam(:,m),1);
+        end
+        % recompute the weights
+        for m=1:k
+            w(m)=sum(gamma(:,m),1)/N;
+        end
+        
+        % compute the log likelihood
+        LL=0;
+        for j=1:N
+            p=0;
+            for m=1:k
+                p = p + w(m) * mvnpdf(points(i,:), mean{m}, cov_k{m});
+            end
+            LL = LL + log(p);
+        end
+        
+        Y(iterations,i) = LL;
+        
+%         
+%     convergence = true;    
+    end
+% plot here
+    plot(1:iterations, Y(:,i), plotmark(i));    
+
+    if max_LL < max(Y(:,i))
+        ID = i;
+        max_LL = max(Y(:,i));
+        max_gamma = gamma;
+        max_mean = mean;
+        max_cov_k = cov_k;
+        
+    end
+
+    
+end
+
+fprintf('\nThe best case is: %d', ID);
+
+cluster_assignment = repmat(max(max_gamma,[],2),1,k)==max_gamma;
+f1 = figure;
+hold on;
+title('Cluster Assignment from GMM');
+for i = 1:N
+    cluster = find(cluster_assignment(i,:)==1);
+    if cluster==1
+        plot(points(i,1), points(i,2), 'rx');
+    elseif cluster==2
+        plot(points(i,1), points(i,2), 'g.');
+    else
+        plot(points(i,1), points(i,2), 'b+');
+    end
+end
+
+fprintf('\nThe mean and covariance for first distribution is: ');
+disp(maxmean(1,:));
+disp(maxcov1);
+disp('The mean and covariance for second distribution is: ');
+disp(maxmean(2,:));
+disp(maxcov2);
+disp('The mean and covariance for third distribution is: ');
+disp(maxmean(3,:));
+disp(maxcov3);
